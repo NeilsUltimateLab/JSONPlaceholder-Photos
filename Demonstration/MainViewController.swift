@@ -35,14 +35,39 @@ class MainViewController: UITableViewController {
         // webservice call and it's response
         let urlString = "http://jsonplaceholder.typicode.com/photos"
         
-        WebserviceManager().callGetWebservice(for: urlString) { (albums) in
+        WebserviceManager().callWebservice(for: urlString) { (json) in
             self.tableView.isHidden = false
-            self.albums = albums
-            self.tableView.reloadData()
+            self.albums?.removeAll()
+            
+            if let responseArray = json as? NSArray {
+                for responseDic in responseArray {
+                    if let responses = responseDic as? NSDictionary {
+                        
+                        var album = Album()
+                        if let albumId = responses["albumId"] as? Int {
+                            album.albumId = albumId
+                        }
+                        if let id = responses["id"] as? Int {
+                            album.id = id
+                        }
+                        if let thumbUrl = responses["thumbnailUrl"] as? String {
+                            album.thumbnailUrl = thumbUrl
+                        }
+                        if let title = responses["title"] as? String {
+                            album.title = title
+                        }
+                        if let url = responses["url"] as? String {
+                            album.url = url
+                        }
+                        self.albums?.append(album)
+                    }
+                }
+                
+                self.tableView.reloadData()
+            }
+            
         }
-        
     }
-    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

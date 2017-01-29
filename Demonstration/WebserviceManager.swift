@@ -43,58 +43,7 @@ class WebserviceManager: NSObject {
     }
     
     
-    func callGetWebservice(for url: String, completion: (([Album])->())?) {
-        var albums = [Album]()
-        if let url = URL(string: url) {
-            let urlRequest = URLRequest(url: url)
-            URLSession.shared.dataTask(with: urlRequest, completionHandler: { (data, response, error) in
-                if error != nil {
-                    return
-                }
-                
-                if let data = data {
-                    do {
-                        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers)
-                        
-                        if let responseArray = json as? NSArray {
-                            for responseDic in responseArray {
-                                if let responses = responseDic as? NSDictionary {
-            
-                                    var album = Album()
-                                    if let albumId = responses["albumId"] as? Int {
-                                        album.albumId = albumId
-                                    }
-                                    if let id = responses["id"] as? Int {
-                                        album.id = id
-                                    }
-                                    if let thumbUrl = responses["thumbnailUrl"] as? String {
-                                        album.thumbnailUrl = thumbUrl
-                                    }
-                                    if let title = responses["title"] as? String {
-                                        album.title = title
-                                    }
-                                    if let url = responses["url"] as? String {
-                                        album.url = url
-                                    }
-                                    albums.append(album)
-                                }
-                            }
-                            DispatchQueue.main.async {
-                                completion?(albums)
-                            }
-                            
-                        }
-                        
-                    } catch {
-                        
-                    }
-                }
-                
-            }).resume()
-        }
-    }
-    
-    func callWebservice(for urlString: String, completionHandler: ((NSDictionary)->())?) {
+    func callWebservice(for urlString: String, completionHandler: ((AnyObject)->())?) {
         if let url = URL(string: urlString) {
             URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
                 if error != nil {
@@ -108,7 +57,11 @@ class WebserviceManager: NSObject {
                             DispatchQueue.main.async {
                                 completionHandler?(responseDict)
                             }
-                            
+                        }
+                        else if let responseDict = json as? NSArray {
+                            DispatchQueue.main.async {
+                                completionHandler?(responseDict)
+                            }
                         }
                         
                     }catch {}
